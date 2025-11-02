@@ -310,11 +310,11 @@
                 <p id="adminEmail"></p>
             </div>
             <ul class="sidebar-menu">
-                <li class="active" onclick="showSection('dashboard')">📊 Dashboard</li>
-                <li onclick="showSection('users')">👥 Kullanıcılar</li>
-                <li onclick="showSection('questions')">💬 Sorular</li>
-                <li onclick="showSection('logs')">📝 Aktivite Logları</li>
-                <li onclick="showSection('stats')">📈 İstatistikler</li>
+                <li class="active" onclick="showSection('dashboard', this)">📊 Dashboard</li>
+                <li onclick="showSection('users', this)">👥 Kullanıcılar</li>
+                <li onclick="showSection('questions', this)">💬 Sorular</li>
+                <li onclick="showSection('logs', this)">📝 Aktivite Logları</li>
+                <li onclick="showSection('stats', this)">📈 İstatistikler</li>
             </ul>
         </aside>
 
@@ -322,7 +322,7 @@
             <div class="header">
                 <h1>Admin Dashboard</h1>
                 <div style="display: flex; gap: 0.5rem;">
-                    <button class="logout-btn" onclick="refreshData()" style="background-color: var(--primary-color);">🔄 Yenile</button>
+                    <button class="logout-btn" onclick="refreshData(this)" style="background-color: var(--primary-color);">🔄 Yenile</button>
                     <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
                 </div>
             </div>
@@ -486,8 +486,96 @@
             }
         }, 10000);
 
+        // Override ve eksik yardımcı fonksiyonlar - düzeltilmiş versiyonlar
+
+        function showSection(sectionId, el) {
+            // Tüm section'ları gizle
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            // Menüdeki active sınıfını güncelle
+            document.querySelectorAll('.sidebar-menu li').forEach(item => item.classList.remove('active'));
+            // İstenen section'ı göster
+            const target = document.getElementById(sectionId);
+            if (target) target.classList.add('active');
+
+            // Eğer element verildiyse ona active ekle
+            if (el && el.classList) el.classList.add('active');
+        }
+
+        function refreshData(btn) {
+            try {
+                const activeSection = document.querySelector('.content-section.active');
+                const sectionId = activeSection ? activeSection.id : 'dashboard';
+
+                switch(sectionId) {
+                    case 'dashboard':
+                        loadDashboard();
+                        break;
+                    case 'users':
+                        loadUsers();
+                        break;
+                    case 'questions':
+                        loadQuestions();
+                        break;
+                    case 'logs':
+                        loadLogs();
+                        break;
+                    case 'stats':
+                        loadDetailedStats();
+                        break;
+                }
+
+                if (btn && btn.textContent) {
+                    const originalText = btn.textContent;
+                    btn.textContent = '✓ Yenilendi';
+                    setTimeout(() => btn.textContent = originalText, 1000);
+                }
+            } catch (e) {
+                console.error('refreshData hata:', e);
+            }
+        }
+
+        // Basit logout: localStorage temizle ve login sayfasına yönlendir
+        function logout() {
+            try {
+                // varsa auth oturumunu sonlandır (firebase auth varsa)
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    try { firebase.auth().signOut().catch(()=>{}); } catch(e) {}
+                }
+            } catch (e) {}
+
+            localStorage.removeItem('currentUser');
+            // isteğe bağlı: diğer localStorage anahtarlarını sil
+            // localStorage.removeItem('users'); localStorage.removeItem('userLogs');
+
+            window.location.replace('login.html');
+        }
+
+        // Basit checkAuth fallback (eğer js/auth.js yoksa çalışır)
+        if (typeof checkAuth !== 'function') {
+            function checkAuth() {
+                const data = localStorage.getItem('currentUser');
+                if (!data) return null;
+                try {
+                    return JSON.parse(data);
+                } catch (e) {
+                    return null;
+                }
+            }
+        }
+
+        // Eğer sayfa başında yapılan kontrollere rağmen admin değilse yönlendirme
+        (function ensureAdminOnLoad() {
+            const user = checkAuth();
+            if (!user || user.role !== 'admin') {
+                // izin yoksa login'e gönder
+                // Not: sayfa yüklenirken bu kontrol zaten var; burada ekstra güvenlik
+            } else {
+                document.getElementById('adminEmail').textContent = user.email || '';
+            }
+        })();
+
         // Navigation
-        function showSection(sectionId) {
+        function showSection(sectionId, element) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
@@ -495,7 +583,7 @@
                 item.classList.remove('active');
             });
             document.getElementById(sectionId).classList.add('active');
-            event.target.classList.add('active');
+            element.classList.add('active');
 
             // Load section data
             switch(sectionId) {
