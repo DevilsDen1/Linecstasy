@@ -258,3 +258,11 @@ function listenToLogsChanges(callback) {
         });
     }
 }
+
+// Ensure Firebase is initialized synchronously
+if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+    if (!firebase.apps || !firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialized');
+    }
+}

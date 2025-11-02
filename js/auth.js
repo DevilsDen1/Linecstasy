@@ -306,81 +306,53 @@ async function handleLogin(event) {
 }
 
 // Handle register form submission
-async function handleRegister(event) {
-    event.preventDefault();
-    
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    // Client-side validation
-    if (!name || !email || !password || !confirmPassword) {
-        alert('Lütfen tüm alanları doldurun');
-        return false;
+async function handleRegister(e) {
+  if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
+  const name = (document.getElementById('name') || {}).value || '';
+  const email = (document.getElementById('email') || {}).value || '';
+  const password = (document.getElementById('password') || {}).value || '';
+  const confirmPassword = (document.getElementById('confirmPassword') || {}).value || '';
+
+  if (!name || !email || !password) {
+    alert('Lütfen tüm alanları doldurun.');
+    return;
+  }
+  if (password !== confirmPassword) {
+    alert('Şifreler eşleşmiyor.');
+    return;
+  }
+
+  try {
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      throw new Error('Firebase Auth yüklü değil veya initialize edilmemiş.');
     }
-    
-    if (password !== confirmPassword) {
-        alert('Şifreler eşleşmiyor');
-        return false;
+
+    const result = await firebase.auth().createUserWithEmailAndPassword(email, password);
+    const user = result.user;
+    const uid = user.uid;
+
+    // Kaydı realtime database'e yaz
+    if (firebase.database) {
+      await firebase.database().ref('users/' + uid).set({
+        name,
+        email,
+        role: 'user',
+        createdAt: Date.now()
+      });
     }
-    
-    try {
-        let result;
-        
-        // Check if Firebase is enabled
-        if (typeof isFirebaseEnabled !== 'undefined' && isFirebaseEnabled) {
-            try {
-                // Firebase Authentication ile kullanıcı oluştur
-                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                // Kullanıcı bilgilerini kaydet
-                const newUser = {
-                    id: user.uid,
-                    name: name,
-                    email: email,
-                    role: ROLES.USER,
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                };
-                
-                // Kullanıcıyı veritabanına kaydet
-                await database.ref('users/' + user.uid).set(newUser);
-                
-                result = {
-                    success: true,
-                    user: newUser
-                };
-                
-            } catch (firebaseError) {
-                console.error('Firebase kayıt hatası:', firebaseError);
-                // Firebase hatasında fallback olarak localStorage kullan
-                result = mockRegisterAPI(name, email, password);
-            }
-        } else {
-            // Firebase yoksa localStorage ile devam et
-            result = mockRegisterAPI(name, email, password);
-        }
-        
-        if (result && result.success) {
-            // Save user to localStorage
-            localStorage.setItem('currentUser', JSON.stringify(result.user));
-            
-            // Log the registration
-            logUserAction(result.user.id, 'register');
-            
-            // Redirect to home page
-            window.location.href = 'index.html';
-        } else {
-            alert(result?.message || 'Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
-        }
-    } catch (error) {
-        console.error('Kayıt işleminde hata:', error);
-        alert('Kayıt sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
-    }
-    
-    return false;
+
+    // Profil ismini güncelle (opsiyonel)
+    try { await user.updateProfile({ displayName: name }); } catch (e) {}
+
+    // Local kaydet ve yönlendir
+    const userData = { uid, email, name, role: 'user' };
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+    window.location.replace('index.html');
+  } catch (err) {
+    console.error('handleRegister error:', err);
+    alert(err.message || 'Kayıt başarısız oldu.');
+  }
 }
 
 // Mock login API (for offline/localStorage mode)
