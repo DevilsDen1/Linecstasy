@@ -1,0 +1,24 @@
+{
+  "name": "linecstasy-ai",
+  "version": "1.0.0",
+  "description": "AI Chatbot with MongoDB backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "npx nodemon server.js",
+    "dev": "nodemon server.js",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "firebase": "^12.5.0",
+    "firebase-admin": "^13.5.0",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "vercel": "^33.0.0"
+  }
+}

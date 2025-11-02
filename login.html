@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap - Linecstasy AI Chat</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4241323430911857"
+         crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- reCAPTCHA Enterprise -->
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Lf_TP0rAAAAAAngfesV8j4OXH4YrooCY_P5yvys"></script>
+    <style>
+        .grecaptcha-badge { 
+            visibility: hidden; 
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h2>Giriş Yap</h2>
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">E-posta</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <!-- reCAPTCHA v3 -->
+                <div class="form-group" style="margin: 15px 0;">
+                    <div class="g-recaptcha" data-sitekey="6Lf_TP0rAAAAAAngfesV8j4OXH4YrooCY_P5yvys" data-callback="onRecaptchaSuccess" data-size="invisible"></div>
+                </div>
+                <button type="submit" class="auth-button">Giriş Yap</button>
+                <div class="auth-links">
+                    <a href="register.html">Hesap oluştur</a> |
+                    <a href="#" onclick="forgotPassword()">Şifremi unuttum</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase Core -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    
+    <!-- Firebase Services -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- Uygulama Script'leri -->
+    <script>
+        // Firebase yüklendikten sonra diğer script'leri yükle
+        function loadScripts() {
+            const scripts = [
+                'js/api-client.js',
+                'js/auth.js'
+            ];
+            
+            function loadScript(index) {
+                if (index >= scripts.length) return;
+                
+                const script = document.createElement('script');
+                script.src = scripts[index];
+                script.onload = () => loadScript(index + 1);
+                script.onerror = (e) => {
+                    console.error(`Script yüklenemedi: ${scripts[index]}`, e);
+                    loadScript(index + 1); // Bir sonraki script'i yüklemeye devam et
+                };
+                
+                document.body.appendChild(script);
+            }
+            
+            // İlk script'i yüklemeye başla
+            loadScript(0);
+        }
+        
+        // Tüm script'ler yüklendikten sonra çalıştır
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadScripts);
+        } else {
+            loadScripts();
+        }
+    </script>
+    <script src="js/api-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // If already logged in, redirect to appropriate page
+        (function() {
+            const currentUserData = localStorage.getItem('currentUser');
+            if (currentUserData) {
+                try {
+                    const user = JSON.parse(currentUserData);
+                    if (user.role === 'admin') {
+                        window.location.replace('admin.html');
+                    } else {
+                        window.location.replace('index.html');
+                    }
+                } catch (e) {
+                    // Invalid data, clear it
+                    localStorage.removeItem('currentUser');
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

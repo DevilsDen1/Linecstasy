@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalStorage Temizle</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4241323430911857"
+         crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .info {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.25rem;
+        }
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.25rem;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin: 0.5rem 0;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        button.safe {
+            background: #10b981;
+        }
+        button.safe:hover {
+            background: #059669;
+        }
+        button.primary {
+            background: #3b82f6;
+        }
+        button.primary:hover {
+            background: #2563eb;
+        }
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 LocalStorage Yönetimi</h1>
+        
+        <div class="info">
+            <strong>Mevcut Durum:</strong>
+            <pre id="storageInfo">Yükleniyor...</pre>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Uyarı:</strong> Logları temizlemek giriş geçmişinizi silecektir, ancak kullanıcı hesapları korunacaktır.
+        </div>
+
+        <button class="safe" onclick="clearLogsOnly()">📝 Sadece Logları Temizle</button>
+        <button class="safe" onclick="clearOldChats()">🗂️ Eski Sohbetleri Temizle (Önerilen)</button>
+        <button class="primary" onclick="clearChatHistory()">💬 Tüm Sohbet Geçmişini Sil</button>
+        <button onclick="clearAllStorage()">🗑️ Tüm Verileri Temizle</button>
+        <button class="primary" onclick="location.href='login.html'">↩️ Giriş Sayfasına Dön</button>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        function getStorageSize() {
+            let total = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    total += localStorage[key].length + key.length;
+                }
+            }
+            return (total / 1024).toFixed(2); // KB
+        }
+
+        function updateStorageInfo() {
+            const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            
+            let chatCount = 0;
+            Object.values(chatHistory).forEach(msgs => chatCount += msgs.length);
+
+            // Count all chats
+            let totalChats = 0;
+            for (let key in localStorage) {
+                if (key.startsWith('chats_')) {
+                    const chats = JSON.parse(localStorage.getItem(key) || '[]');
+                    totalChats += chats.length;
+                }
+            }
+
+            document.getElementById('storageInfo').textContent = 
+                `Toplam Boyut: ${getStorageSize()} KB\n` +
+                `Kullanıcı Sayısı: ${users.length}\n` +
+                `Log Sayısı: ${logs.length}\n` +
+                `Sohbet Mesajı: ${chatCount}\n` +
+                `Kayıtlı Sohbet: ${totalChats}`;
+        }
+
+        function showStatus(message, isSuccess = true) {
+            const status = document.getElementById('status');
+            status.className = 'status ' + (isSuccess ? 'success' : 'error');
+            status.textContent = message;
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearLogsOnly() {
+            try {
+                const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
+                const oldCount = logs.length;
+                
+                // Keep only last 100 logs
+                const newLogs = logs.slice(-100);
+                localStorage.setItem('userLogs', JSON.stringify(newLogs));
+                
+                showStatus(`✅ Başarılı! ${oldCount - newLogs.length} log silindi. ${newLogs.length} log kaldı.`);
+                updateStorageInfo();
+            } catch (e) {
+                showStatus(`❌ Hata: ${e.message}`, false);
+            }
+        }
+
+        function clearOldChats() {
+            try {
+                let totalRemoved = 0;
+                let totalKept = 0;
+                
+                // Clear old chats for each user
+                for (let key in localStorage) {
+                    if (key.startsWith('chats_')) {
+                        const chats = JSON.parse(localStorage.getItem(key) || '[]');
+                        const oldCount = chats.length;
+                        
+                        // Keep only last 10 chats
+                        const newChats = chats.slice(0, 10);
+                        localStorage.setItem(key, JSON.stringify(newChats));
+                        
+                        totalRemoved += oldCount - newChats.length;
+                        totalKept += newChats.length;
+                    }
+                }
+                
+                // Clear old chat history messages
+                const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+                for (let userId in chatHistory) {
+                    const messages = chatHistory[userId];
+                    if (messages.length > 50) {
+                        chatHistory[userId] = messages.slice(-50);
+                    }
+                }
+                localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+                
+                showStatus(`✅ Başarılı! ${totalRemoved} eski sohbet silindi. ${totalKept} sohbet korundu.`);
+                updateStorageInfo();
+            } catch (e) {
+                showStatus(`❌ Hata: ${e.message}`, false);
+            }
+        }
+
+        function clearChatHistory() {
+            if (confirm('Tüm sohbet geçmişini silmek istediğinizden emin misiniz?')) {
+                try {
+                    let removedCount = 0;
+                    
+                    // Remove chatHistory
+                    localStorage.removeItem('chatHistory');
+                    
+                    // Remove all chats_* keys
+                    for (let key in localStorage) {
+                        if (key.startsWith('chats_')) {
+                            localStorage.removeItem(key);
+                            removedCount++;
+                        }
+                    }
+                    
+                    localStorage.removeItem('userStats');
+                    showStatus(`✅ Sohbet geçmişi temizlendi! ${removedCount} kullanıcının sohbetleri silindi.`);
+                    updateStorageInfo();
+                } catch (e) {
+                    showStatus(`❌ Hata: ${e.message}`, false);
+                }
+            }
+        }
+
+        function clearAllStorage() {
+            if (confirm('TÜM VERİLERİ silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+                if (confirm('Son kez soruyorum: Tüm kullanıcılar, loglar ve sohbetler silinecek. Emin misiniz?')) {
+                    try {
+                        localStorage.clear();
+                        showStatus('✅ Tüm veriler temizlendi! Sayfa yenileniyor...');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } catch (e) {
+                        showStatus(`❌ Hata: ${e.message}`, false);
+                    }
+                }
+            }
+        }
+
+        // Initial load
+        updateStorageInfo();
+    </script>
+</body>
+</html>

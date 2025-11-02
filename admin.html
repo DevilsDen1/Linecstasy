@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Linecstasy AI</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4241323430911857"
+         crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #19c37d;
+            --secondary-color: #202123;
+            --background-light: #f5f7fa;
+            --background-white: #ffffff;
+            --text-color: #333333;
+            --border-color: #e5e5e5;
+            --danger-color: #dc2626;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Söhne', 'ui-sans-serif', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-color);
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            font-size: 0.875rem;
+            opacity: 0.7;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-menu li {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu li.active {
+            background-color: var(--primary-color);
+        }
+
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .header {
+            background-color: var(--background-white);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.875rem;
+            color: var(--secondary-color);
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: opacity 0.2s;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--background-white);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .stat-card.primary .value {
+            color: var(--primary-color);
+        }
+
+        .stat-card.danger .value {
+            color: var(--danger-color);
+        }
+
+        .stat-card.info .value {
+            color: var(--info-color);
+        }
+
+        .content-section {
+            background-color: var(--background-white);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .content-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead {
+            background-color: var(--background-light);
+        }
+
+        table th {
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        table tbody tr:hover {
+            background-color: var(--background-light);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .action-btn {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+
+        .action-btn.view {
+            background-color: var(--info-color);
+            color: white;
+        }
+
+        .action-btn.lock {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .action-btn.unlock {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            width: 100%;
+            max-width: 400px;
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>⚡ Admin Panel</h2>
+                <p id="adminEmail"></p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active" onclick="showSection('dashboard')">📊 Dashboard</li>
+                <li onclick="showSection('users')">👥 Kullanıcılar</li>
+                <li onclick="showSection('questions')">💬 Sorular</li>
+                <li onclick="showSection('logs')">📝 Aktivite Logları</li>
+                <li onclick="showSection('stats')">📈 İstatistikler</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h1>Admin Dashboard</h1>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="logout-btn" onclick="refreshData()" style="background-color: var(--primary-color);">🔄 Yenile</button>
+                    <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <h3>Toplam Kullanıcı</h3>
+                        <div class="value" id="totalUsers">0</div>
+                    </div>
+                    <div class="stat-card info">
+                        <h3>Aktif Kullanıcı</h3>
+                        <div class="value" id="activeUsers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Toplam Soru</h3>
+                        <div class="value" id="totalQuestions">0</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <h3>Kilitli Hesap</h3>
+                        <div class="value" id="lockedAccounts">0</div>
+                    </div>
+                </div>
+
+                <h2>Son Aktiviteler</h2>
+                <div id="recentActivity"></div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users" class="content-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Kullanıcı Yönetimi</h2>
+                    <button onclick="clearTestUsers()" style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                        🗑️ Test Kullanıcılarını Temizle
+                    </button>
+                </div>
+                <input type="text" class="search-box" placeholder="Kullanıcı ara..." onkeyup="filterUsers(this.value)">
+                <div id="usersTable"></div>
+            </div>
+
+            <!-- Questions Section -->
+            <div id="questions" class="content-section">
+                <h2>Sorulan Sorular</h2>
+                <input type="text" class="search-box" placeholder="Soru ara..." onkeyup="filterQuestions(this.value)">
+                <div id="questionsTable"></div>
+            </div>
+
+            <!-- Logs Section -->
+            <div id="logs" class="content-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2 style="margin-bottom: 0;">Aktivite Logları</h2>
+                    <button class="action-btn lock" onclick="clearOldLogs()" style="margin: 0;">Eski Logları Temizle</button>
+                </div>
+                <input type="text" class="search-box" placeholder="Log ara..." onkeyup="filterLogs(this.value)">
+                <div id="logsTable"></div>
+            </div>
+
+            <!-- Stats Section -->
+            <div id="stats" class="content-section">
+                <h2>Detaylı İstatistikler</h2>
+                <div id="detailedStats"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+    <script>
+        // Strict authentication check - must run immediately
+        (function() {
+            const currentUserData = localStorage.getItem('currentUser');
+            
+            // If no user data, redirect immediately
+            if (!currentUserData) {
+                window.location.replace('login.html');
+                return;
+            }
+            
+            let user;
+            try {
+                user = JSON.parse(currentUserData);
+            } catch (e) {
+                // Invalid user data, clear and redirect
+                localStorage.removeItem('currentUser');
+                window.location.replace('login.html');
+                return;
+            }
+            
+            // If not admin, redirect to user page
+            if (user.role !== 'admin') {
+                window.location.replace('index.html');
+                return;
+            }
+            
+            // Display admin email
+            document.getElementById('adminEmail').textContent = user.email;
+        })();
+        
+        // Double check with checkAuth
+        const user = checkAuth();
+        if (!user || user.role !== 'admin') {
+            window.location.replace('login.html');
+        }
+
+        // Sample data creation is disabled
+        // Users will only appear when they register through the app
+        
+        // Function to initialize real-time updates
+        function initializeRealtimeUpdates() {
+            if (typeof listenToUsersChanges === 'function') {
+                console.log('Real-time updates başlatılıyor...');
+                listenToUsersChanges((users) => {
+                    console.log('Kullanıcı değişikliği algılandı:', users);
+                    // Update the users list in localStorage
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    // If we're on the users section, refresh the view
+                    const activeSection = document.querySelector('.content-section.active');
+                    if (activeSection && activeSection.id === 'users') {
+                        loadUsers();
+                    }
+                    
+                    // Also update the dashboard if it's active
+                    if (activeSection && activeSection.id === 'dashboard') {
+                        loadDashboard();
+                    }
+                });
+            } else {
+                console.error('listenToUsersChanges fonksiyonu bulunamadı!');
+            }
+        }
+
+        // Firebase yüklenene kadar bekle
+        const checkFirebaseLoaded = setInterval(() => {
+            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                clearInterval(checkFirebaseLoaded);
+                console.log('Firebase yüklendi, gerçek zamanlı güncellemeler başlatılıyor...');
+                initializeRealtimeUpdates();
+                // Hemen kullanıcıları yükle
+                if (typeof getAllUsersFromDB === 'function') {
+                    getAllUsersFromDB().then(users => {
+                        console.log('Başlangıç kullanıcı verileri yüklendi:', users);
+                        loadUsers();
+                    });
+                }
+            }
+        }, 500);
+
+        // 10 saniye sonra hala yüklenmediyse uyar
+        setTimeout(() => {
+            if (checkFirebaseLoaded) {
+                clearInterval(checkFirebaseLoaded);
+                console.warn('Firebase yüklenmedi, sadece yerel veriler gösterilecek');
+                loadUsers(); // Yine de yerel verileri yükle
+            }
+        }, 10000);
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.sidebar-menu li').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load section data
+            switch(sectionId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'questions':
+                    loadQuestions();
+                    break;
+                case 'logs':
+                    loadLogs();
+                    break;
+                case 'stats':
+                    loadDetailedStats();
+                    break;
+            }
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            // Try to refresh users from API (falls back to localStorage inside helper)
+            if (typeof getAllUsersFromDB === 'function') {
+                try { await getAllUsersFromDB(); } catch (e) {}
+            }
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
+
+            console.log('Dashboard - Tüm kullanıcılar:', users);
+            console.log('Dashboard - Chat History:', chatHistory);
+            console.log('Dashboard - Logs:', logs);
+
+            // Calculate stats
+            const totalUsers = users.filter(u => u.role !== 'admin').length;
+            const today = new Date().toDateString();
+            const activeUsers = users.filter(u => u.lastLogin && new Date(u.lastLogin).toDateString() === today).length;
+            const lockedAccounts = users.filter(u => u.locked).length;
+            
+            let totalQuestions = 0;
+            Object.values(chatHistory).forEach(messages => {
+                totalQuestions += messages.filter(m => m.role === 'user').length;
+            });
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('lockedAccounts').textContent = lockedAccounts;
+
+            // Recent activity
+            const recentLogs = logs.slice(-10).reverse();
+            const activityHTML = recentLogs.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı</th>
+                            <th>Aksiyon</th>
+                            <th>Zaman</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recentLogs.map(log => {
+                            const user = users.find(u => u.id === log.userId);
+                            return `
+                                <tr>
+                                    <td>${user ? user.email : log.userId}</td>
+                                    <td><span class="badge info">${log.action}</span></td>
+                                    <td>${new Date(log.timestamp).toLocaleString('tr-TR')}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state">Henüz aktivite yok</div>';
+
+            document.getElementById('recentActivity').innerHTML = activityHTML;
+        }
+
+        // Load Users
+        async function loadUsers() {
+            try {
+                // Firebase'den kullanıcıları getir
+                let users = await getAllUsersFromDB();
+                
+                if (!users || users.length === 0) {
+                    document.getElementById('usersTable').innerHTML = 
+                        '<div class="empty-state">Henüz hiç kullanıcı yok</div>';
+                    return;
+                }
+
+                // Admin olmayan kullanıcıları filtrele
+                users = users.filter(user => user.role !== 'admin');
+
+                const usersHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>E-posta</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>Son Giriş</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr>
+                                    <td>${user.name}</td>
+                                    <td>${user.email}</td>
+                                    <td>${new Date(user.createdAt).toLocaleDateString('tr-TR')}</td>
+                                    <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString('tr-TR') : 'Hiç giriş yapmadı'}</td>
+                                    <td>
+                                        <span class="badge ${user.locked ? 'danger' : 'success'}">
+                                            ${user.locked ? 'Kilitli' : 'Aktif'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn view" onclick="viewUserDetails('${user.id}')">Detay</button>
+                                        ${user.locked ? 
+                                            `<button class="action-btn unlock" onclick="toggleUserLock('${user.id}', false)">Kilidi Aç</button>` :
+                                            `<button class="action-btn lock" onclick="toggleUserLock('${user.id}', true)">Kilitle</button>`
+                                        }
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('usersTable').innerHTML = usersHTML;
+            } catch (error) {
+                console.error('Kullanıcılar yüklenirken hata:', error);
+                document.getElementById('usersTable').innerHTML = 
+                    '<div class="empty-state error">Kullanıcılar yüklenirken hata oluştu!</div>';
+            }
+        }
+
+        // Load Questions
+        function loadQuestions() {
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            let allQuestions = [];
+            Object.entries(chatHistory).forEach(([userId, messages]) => {
+                const user = users.find(u => u.id === userId);
+                messages.forEach(msg => {
+                    if (msg.role === 'user') {
+                        allQuestions.push({
+                            userId: userId,
+                            userName: user ? user.name : 'Bilinmeyen',
+                            userEmail: user ? user.email : 'Bilinmeyen',
+                            content: msg.content,
+                            timestamp: msg.timestamp
+                        });
+                    }
+                });
+            });
+
+            allQuestions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (allQuestions.length === 0) {
+                document.getElementById('questionsTable').innerHTML = '<div class="empty-state">Henüz soru sorulmamış</div>';
+                return;
+            }
+
+            const questionsHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı</th>
+                            <th>E-posta</th>
+                            <th>Soru</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allQuestions.map(q => `
+                            <tr>
+                                <td>${q.userName}</td>
+                                <td>${q.userEmail}</td>
+                                <td>${q.content.substring(0, 100)}${q.content.length > 100 ? '...' : ''}</td>
+                                <td>${new Date(q.timestamp).toLocaleString('tr-TR')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('questionsTable').innerHTML = questionsHTML;
+        }
+
+        // Load Logs
+        function loadLogs() {
+            const logs = JSON.parse(localStorage.getItem('userLogs') || '[]').reverse();
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+            if (logs.length === 0) {
+                document.getElementById('logsTable').innerHTML = '<div class="empty-state">Henüz log kaydı yok</div>';
+                return;
+            }
+
+            const logsHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı</th>
+                            <th>Aksiyon</th>
+                            <th>Detaylar</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${logs.map(log => {
+                            const user = users.find(u => u.id === log.userId);
+                            return `
+                                <tr>
+                                    <td>${user ? user.email : log.userId}</td>
+                                    <td><span class="badge info">${log.action}</span></td>
+                                    <td>${JSON.stringify(log.details).substring(0, 50)}</td>
+                                    <td>${new Date(log.timestamp).toLocaleString('tr-TR')}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('logsTable').innerHTML = logsHTML;
+        }
+
+        // Load Detailed Stats
+        function loadDetailedStats() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            const userStats = JSON.parse(localStorage.getItem('userStats') || '{}');
+
+            let statsHTML = '<div class="stats-grid">';
+
+            users.filter(u => u.role !== 'admin').forEach(user => {
+                const userMessages = chatHistory[user.id] || [];
+                const stats = userStats[user.id] || { totalMessages: 0, totalChats: 0 };
+                
+                statsHTML += `
+                    <div class="stat-card">
+                        <h3>${user.name}</h3>
+                        <p><strong>E-posta:</strong> ${user.email}</p>
+                        <p><strong>Toplam Mesaj:</strong> ${stats.totalMessages}</p>
+                        <p><strong>Toplam Sohbet:</strong> ${stats.totalChats}</p>
+                        <p><strong>Kayıt Tarihi:</strong> ${new Date(user.createdAt).toLocaleDateString('tr-TR')}</p>
+                    </div>
+                `;
+            });
+
+            statsHTML += '</div>';
+            document.getElementById('detailedStats').innerHTML = statsHTML;
+        }
+
+        // Filter functions
+        function filterUsers(query) {
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        function filterQuestions(query) {
+            const rows = document.querySelectorAll('#questionsTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        function filterLogs(query) {
+            const rows = document.querySelectorAll('#logsTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        // User actions
+        function viewUserDetails(userId) {
+            const user = getUserById(userId);
+            const chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+            const userMessages = chatHistory[userId] || [];
+            
+            alert(`Kullanıcı Detayları:\n\nAd: ${user.name}\nE-posta: ${user.email}\nKayıt: ${new Date(user.createdAt).toLocaleString('tr-TR')}\nToplam Mesaj: ${userMessages.length}`);
+        }
+
+        function toggleUserLock(userId, lock) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userIndex = users.findIndex(u => u.id === userId);
+            
+            if (userIndex !== -1) {
+                users[userIndex].locked = lock;
+                localStorage.setItem('users', JSON.stringify(users));
+                logUserAction('admin', lock ? 'lock_user' : 'unlock_user', { targetUserId: userId });
+                loadUsers();
+            }
+        }
+
+        function clearOldLogs() {
+            if (confirm('Eski logları temizlemek istediğinizden emin misiniz? Sadece son 500 log kalacak.')) {
+                const result = AdminUtils.clearOldLogs();
+                if (result.success) {
+                    alert(`Başarılı! ${result.removed} log silindi. ${result.remaining} log kaldı.`);
+                    loadLogs();
+                } else {
+                    alert('Hata: ' + result.error);
+                }
+            }
+        }
+
+        // Refresh all data
+        function refreshData() {
+            const activeSection = document.querySelector('.content-section.active');
+            const sectionId = activeSection ? activeSection.id : 'dashboard';
+            
+            // Reload current section
+            switch(sectionId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'questions':
+                    loadQuestions();
+                    break;
+                case 'logs':
+                    loadLogs();
+                    break;
+                case 'stats':
+                    loadDetailedStats();
+                    break;
+            }
+            
+            // Show success message
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Yenilendi';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 1000);
+        }
+        
+        // Clear test users function
+        function clearTestUsers() {
+            if (!confirm('Test kullanıcılarını (test1@example.com, test2@example.com) silmek istediğinize emin misiniz?')) {
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const testEmails = ['test1@example.com', 'test2@example.com'];
+            
+            // Remove test users
+            const cleanedUsers = users.filter(u => !testEmails.includes(u.email));
+            localStorage.setItem('users', JSON.stringify(cleanedUsers));
+            
+            // Remove test user logs
+            const logs = JSON.parse(localStorage.getItem('userLogs') || '[]');
+            const testUserIds = users.filter(u => testEmails.includes(u.email)).map(u => u.id);
+            const cleanedLogs = logs.filter(log => !testUserIds.includes(log.userId));
+            localStorage.setItem('userLogs', JSON.stringify(cleanedLogs));
+            
+            alert('✅ Test kullanıcıları temizlendi!');
+            loadDashboard();
+            loadUsers();
+        }
+
+        // Auto refresh every 30 seconds
+        setInterval(() => {
+            const activeSection = document.querySelector('.content-section.active');
+            if (activeSection && activeSection.id === 'dashboard') {
+                loadDashboard();
+            }
+        }, 30000);
+
+        // Initial load
+        loadDashboard();
+    </script>
+</body>
+</html>
