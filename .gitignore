@@ -21,3 +21,5 @@ Thumbs.db
 # Build files
 dist/
 build/
+.env
+js/firebase-config.js
