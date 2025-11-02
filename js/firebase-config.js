@@ -1,12 +1,12 @@
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID
+    apiKey: "AIzaSyC2Dct0xz6sYqEH5MnSe4qc08Akbs5VYzY",
+    authDomain: "linecstasy-ai-sohbet.firebaseapp.com",
+    databaseURL: "https://linecstasy-ai-sohbet-default-rtdb.firebaseio.com",
+    projectId: "linecstasy-ai-sohbet",
+    storageBucket: "linecstasy-ai-sohbet.firebasestorage.app",
+    messagingSenderId: "535942488129",
+    appId: "1:535942488129:web:05bf2ad744a7248126e6c0"
 };
 
 // Global değişkenler
